@@ -14,9 +14,7 @@
   <img src="https://img.shields.io/badge/status-active-brightgreen" alt="Status">
 </p>
 
-<p align="center">
-  <img src="https://via.placeholder.com/800x400/007bff/ffffff?text=FlowHR+Dashboard+Preview" alt="Preview" width="80%">
-</p>
+
 
 ## 🌟 Ключевые возможности
 
