@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Мар 21 2025 г., 02:49
+-- Время создания: Июн 20 2025 г., 02:42
 -- Версия сервера: 8.0.30
 -- Версия PHP: 7.2.34
 
@@ -319,18 +319,21 @@ INSERT INTO `answers` (`id`, `question_id`, `answer_text`, `is_correct`) VALUES
 CREATE TABLE `applications` (
   `id` int NOT NULL,
   `job_id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `status` enum('pending','accepted','rejected') DEFAULT 'pending',
-  `applied_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `hr_id` int NOT NULL,
+  `candidate_id` int DEFAULT NULL,
+  `entity_type` enum('vacancy','resume') NOT NULL,
+  `entity_id` int NOT NULL,
+  `status` enum('pending','rejected','interview','hired') NOT NULL DEFAULT 'pending',
+  `message` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Дамп данных таблицы `applications`
 --
 
-INSERT INTO `applications` (`id`, `job_id`, `user_id`, `status`, `applied_at`) VALUES
-(1, 1, 2, 'accepted', '2025-03-15 02:33:22'),
-(2, 2, 2, 'pending', '2025-03-15 12:05:57');
+INSERT INTO `applications` (`id`, `job_id`, `hr_id`, `candidate_id`, `entity_type`, `entity_id`, `status`, `message`, `created_at`) VALUES
+(16, 11, 1, 2, 'resume', 25, 'pending', 'Здравствуйте. Заинтересовала ваше резюме хотим предложить вам вакансию в нашей компании', '2025-06-19 17:18:08');
 
 -- --------------------------------------------------------
 
@@ -365,21 +368,49 @@ CREATE TABLE `jobs` (
   `id` int NOT NULL,
   `title` varchar(255) NOT NULL,
   `description` text NOT NULL,
-  `user_id` int NOT NULL,
+  `hr_id` int NOT NULL,
   `status` enum('active','closed') DEFAULT 'active',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `experience_id` int NOT NULL,
-  `salary_id` int NOT NULL,
-  `skill_ids` text
+  `salary_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Дамп данных таблицы `jobs`
 --
 
-INSERT INTO `jobs` (`id`, `title`, `description`, `user_id`, `status`, `created_at`, `experience_id`, `salary_id`, `skill_ids`) VALUES
-(1, 'Разработчик на языке программирования Javа', 'Нам нужен программист, который чуть выше базового уровня знает, язык программирования java и имеет пару проектов для проверки', 1, 'active', '2025-03-15 02:26:21', 2, 4, '1'),
-(2, 'Разработчик на Python', 'Нужен разработчик на языке программирования Python, который работает с данным кодом более 2 лет', 1, 'active', '2025-03-15 11:51:41', 3, 5, '2');
+INSERT INTO `jobs` (`id`, `title`, `description`, `hr_id`, `status`, `created_at`, `experience_id`, `salary_id`) VALUES
+(6, 'Senior разработчик на Java', 'Должность: Senior Java разработчик  \r\nОбязанности:\r\n- Разработка и поддержка высоконагруженных backend-систем  \r\n- Оптимизация производительности и отказоустойчивости приложений  \r\n- Участие в проектировании архитектуры (микросервисы, Spring Boot)  \r\n- Code review, наставничество для junior/middle-разработчиков  \r\n- Интеграция с Kafka, Redis, Elasticsearch  \r\n\r\nТребования: \r\n- 5+ лет коммерческой разработки на Java  \r\n- Глубокое знание Spring Framework (Boot, Cloud, Data)  \r\n- Опыт с SQL/NoSQL (PostgreSQL, Cassandra)  \r\n- Понимание принципов CI/CD, Docker, Kubernetes  \r\n- Английский: Upper-Intermediate  \r\n\r\nУсловия:  \r\n- Удалёнка/гибрид, гибкий график  \r\n- Бонусы за performance, обучение за счёт компании  \r\n- Медицинская страховка + спортивная компенсация  ', 1, 'active', '2025-06-19 16:48:10', 6, 5),
+(7, 'Senior C++ разработчик  ', 'Должность: Senior C++ разработчик  \r\nОбязанности:\r\n- Разработка low-latency систем для трейдинговых платформ  \r\n- Оптимизация алгоритмов обработки данных в реальном времени  \r\n- Портирувание legacy-кода на современные стандарты C++17/20  \r\n- Тестирование и профилирование (gprof, Valgrind)  \r\n\r\nТребования:\r\n- 5+ лет на C++ в high-performance проектах  \r\n- Знание многопоточности (Boost, STL async)  \r\n- Опыт с сетевыми протоколами (TCP/UDP, WebSocket)  \r\n- Понимание ОС Linux (системные вызовы, IPC)  \r\n- Математическая база (алгоритмы, структуры данных)  \r\n\r\nУсловия:  \r\n- Офис в ЦАО (Москва) или релокация  \r\n- Участие в opensource-проектах компании  \r\n- Ежеквартальные бонусы по KPI  ', 1, 'active', '2025-06-19 16:49:00', 6, 5),
+(8, 'JavaScript разработчик (React/Node.js)  ', 'Должность: JavaScript разработчик (React/Node.js)  \r\nОбязанности:\r\n- Создание SPA на React.js (Next.js)  \r\n- Разработка API на Node.js (Express/Nest)  \r\n- Интеграция с базами данных (MongoDB, PostgreSQL)  \r\n- Вёрстка адаптивных интерфейсов (Material UI)  \r\n\r\nТребования:\r\n- 3+ года коммерческого опыта с JavaScript  \r\n- Опыт с React + Redux Toolkit / Zustand  \r\n- Знание TypeScript, Webpack, REST/GraphQL  \r\n- Базовое понимание DevOps (AWS/Docker)  \r\n- Английский: Intermediate+  \r\n\r\nУсловия:\r\n- Гибкий график, удалённая работа  \r\n- Годовой бюджет на курсы и конференции  \r\n- Компенсация co-working space  ', 1, 'active', '2025-06-19 16:50:43', 4, 3),
+(9, 'PHP разработчик (Middle/Senior)  ', 'Должность: PHP разработчик (Middle/Senior)  \r\nОбязанности:\r\n- Разработка и поддержка CRM и ERP-систем  \r\n- Рефакторинг legacy-кода, внедрение современных практик  \r\n- Интеграция платежных систем (Stripe, PayPal)  \r\n- Написание unit-тестов (PHPUnit)  \r\n\r\nТребования:\r\n- 3+ года с PHP (Symfony/Laravel)  \r\n- Опыт с MySQL/PostgreSQL (оптимизация запросов)  \r\n- Знание Docker, Redis, RabbitMQ  \r\n- Понимание ООП, SOLID, паттернов проектирования  \r\n- Базовый английский (чтение документации)  \r\n\r\nУсловия:\r\n- Гибридный формат (Москва/СПб)  \r\n- Премии за внедрение идей  \r\n- Корпоративный психолог', 1, 'active', '2025-06-19 16:51:49', 4, 3),
+(10, 'Python разработчик  ', 'Должность: Python разработчик  \r\nОбязанности:\r\n- Разработка ETL-пайплайнов для обработки данных  \r\n- Создание API для ML-моделей (FastAPI/Django)  \r\n- Анализ и визуализация данных (Pandas, Matplotlib)  \r\n- Автоматизация инфраструктуры (Terraform, Ansible)  \r\n\r\nТребования:\r\n- 3+ года на Python (asyncio, type hints)  \r\n- Опыт с Django/FastAPI, SQLAlchemy  \r\n- Знание облачных платформ (AWS/GCP)  \r\n- Базовые навыки Data Engineering (Airflow, Spark)  \r\n- Английский: Intermediate+  \r\n\r\nУсловия:\r\n- Удалёнка с возможностью офиса (раз в квартал)  \r\n- Доступ к GPU-кластеру для экспериментов  \r\n- Гранты на ML-курсы  ', 1, 'active', '2025-06-19 16:53:23', 4, 3),
+(11, 'Разработчик на Javascript', 'Нужен разработчик с опытом более 3 лет. Который знает react и node.JS', 1, 'active', '2025-06-19 17:06:56', 4, 3);
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `job_skills`
+--
+
+CREATE TABLE `job_skills` (
+  `id` int NOT NULL,
+  `job_id` int NOT NULL,
+  `skill_id` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Дамп данных таблицы `job_skills`
+--
+
+INSERT INTO `job_skills` (`id`, `job_id`, `skill_id`, `created_at`) VALUES
+(36, 6, 1, '2025-06-19 16:48:10'),
+(37, 7, 5, '2025-06-19 16:49:00'),
+(38, 8, 4, '2025-06-19 16:50:43'),
+(39, 9, 3, '2025-06-19 16:51:49'),
+(40, 10, 2, '2025-06-19 16:53:23'),
+(41, 11, 4, '2025-06-19 17:06:56');
 
 -- --------------------------------------------------------
 
@@ -402,12 +433,55 @@ CREATE TABLE `messages` (
 --
 
 INSERT INTO `messages` (`id`, `application_id`, `user_id`, `content`, `file_path`, `file_type`, `created_at`) VALUES
-(1, 1, 1, 'хаййййй\r\n', NULL, NULL, '2025-03-15 11:21:12'),
-(2, 1, 2, 'ну привет, когда я буду получать много денег?\r\n', NULL, NULL, '2025-03-15 11:24:34'),
-(3, 2, 1, 'Здравствуйте', NULL, NULL, '2025-03-16 02:28:52'),
-(4, 2, 2, 'Хаааай', NULL, NULL, '2025-03-16 02:32:03'),
-(5, 2, 2, 'дайте денег', NULL, NULL, '2025-03-16 02:32:10'),
-(6, 1, 1, 'Не знаю, Не знаю. У нас как минимум через год, а в дунайс через лет 5 только', NULL, NULL, '2025-03-16 18:28:36');
+(7, 5, 1, 'привет', NULL, NULL, '2025-05-13 01:30:25'),
+(8, 2, 1, 'Здравствуйте', NULL, NULL, '2025-05-13 01:49:09'),
+(9, 2, 2, 'Здравствуйте, вас заинтересовало мое резюме?', NULL, NULL, '2025-05-13 22:28:32'),
+(10, 2, 1, 'Да, как нам кажется вы будете прекрасным разработчиком в нашей компании с заработной платой 150000р в месяц + премии', NULL, NULL, '2025-05-13 22:29:25'),
+(11, 3, 2, 'Хааай', NULL, NULL, '2025-05-16 14:41:12'),
+(12, 3, 2, 'Ну, что как дела?', NULL, NULL, '2025-05-16 14:41:19'),
+(13, 3, 1, 'прииив', NULL, NULL, '2025-05-16 14:42:19'),
+(14, 3, 1, 'привки', NULL, NULL, '2025-05-16 14:43:29'),
+(15, 3, 1, 'ог', NULL, NULL, '2025-05-16 14:43:34'),
+(16, 3, 1, 'робит', NULL, NULL, '2025-05-16 14:43:38'),
+(17, 3, 1, 'Вас пригласили на собеседование', NULL, NULL, '2025-05-16 15:11:22'),
+(18, 3, 1, 'Ждем вас на собеседовании', NULL, NULL, '2025-05-16 15:11:32'),
+(19, 3, 2, 'Спасибо, я прийду', NULL, NULL, '2025-05-16 15:11:48'),
+(20, 3, 1, 'дада, ждем ждем', NULL, NULL, '2025-05-16 15:13:20'),
+(21, 3, 2, 'буду буду', NULL, NULL, '2025-05-16 15:13:28'),
+(22, 3, 1, 'пу пу прааау', NULL, NULL, '2025-05-16 15:15:12'),
+(23, 3, 2, 'ка ка ка', NULL, NULL, '2025-05-16 15:15:21'),
+(24, 3, 2, 'гра гра', NULL, NULL, '2025-05-16 15:15:29'),
+(25, 3, 1, 'папа', NULL, NULL, '2025-05-16 15:15:34'),
+(26, 7, 1, 'Хаааааай', NULL, NULL, '2025-05-21 19:36:45'),
+(27, 7, 1, 'йоу', NULL, NULL, '2025-05-22 19:41:05'),
+(28, 7, 1, 'Вы нам ответите?', NULL, NULL, '2025-05-30 02:57:01'),
+(29, 16, 1, 'Здравствуйте. Нас заинтересовало ваше резюме, и мы хотели бы предложить вам местов  нашей компании. Если готовы рассмотреть наше предложение просим вас ответить и мы расскажем вам подробнее об вакансии и месте в офисе.', NULL, NULL, '2025-06-19 17:23:03');
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `profile_fields`
+--
+
+CREATE TABLE `profile_fields` (
+  `id` int NOT NULL,
+  `field_name` varchar(50) NOT NULL,
+  `field_label` varchar(100) NOT NULL,
+  `is_required` tinyint(1) DEFAULT '0',
+  `weight` int DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Дамп данных таблицы `profile_fields`
+--
+
+INSERT INTO `profile_fields` (`id`, `field_name`, `field_label`, `is_required`, `weight`) VALUES
+(1, 'name', 'ФИО', 1, 2),
+(2, 'email', 'Email', 1, 2),
+(3, 'phone', 'Телефон', 0, 1),
+(4, 'age', 'Возраст', 0, 1),
+(5, 'city', 'Город', 0, 1),
+(6, 'avatar', 'Аватар', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -542,7 +616,77 @@ INSERT INTO `results` (`id`, `test_id`, `user_id`, `score`, `time_taken`, `compl
 (2, 1, 2, 0, 0, '2025-03-16 02:46:50'),
 (3, 5, 2, 30, 0, '2025-03-16 02:48:47'),
 (4, 4, 2, 40, 0, '2025-03-16 18:19:52'),
-(5, 9, 2, 60, 0, '2025-03-17 23:06:06');
+(5, 9, 2, 60, 0, '2025-03-17 23:06:06'),
+(6, 3, 2, 40, 0, '2025-04-07 03:05:14');
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `resumes`
+--
+
+CREATE TABLE `resumes` (
+  `id` int NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` text,
+  `visibility_duration` int NOT NULL,
+  `salary_id` int DEFAULT NULL,
+  `experience_id` int DEFAULT NULL,
+  `user_id` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_published` tinyint(1) DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Дамп данных таблицы `resumes`
+--
+
+INSERT INTO `resumes` (`id`, `title`, `description`, `visibility_duration`, `salary_id`, `experience_id`, `user_id`, `created_at`, `is_published`) VALUES
+(20, 'Senior Java Developer с 7-летним опытом', 'Профессиональный профиль:\r\nSenior Java Developer с 7-летним опытом в создании микросервисных архитектур для fintech. Эксперт в оптимизации high-load систем (до 50k RPS). Активно использую Spring Boot, Kafka, Kubernetes. Готов решать сложные задачи и делиться опытом с командой.  \r\n\r\nКлючевые навыки:\r\n- Java 17+, Spring (Boot/Cloud/Security), Hibernate  \r\n- Микросервисы, REST/gRPC, Apache Kafka  \r\n- PostgreSQL, MongoDB, Redis  \r\n- Docker, Kubernetes, GitLab CI/CD  \r\n- JUnit, Mockito, нагрузочное тестирование', 30, 5, 6, 9, '2025-06-19 16:56:51', 1),
+(21, 'Senior C++ Developer, специализация – low-latency системы для финансовых рынков', 'Профессиональный профиль: \r\nSenior C++ Developer, специализация – low-latency системы для финансовых рынков. Опыт разработки ядер высокочастотных трейдинговых движков. Глубокие знания C++17/20, многопоточности, сетевых стеков. Фокус на производительности и безопасности кода.  \r\n\r\nКлючевые навыки:\r\n- C++17/20, STL, Boost (Asio, Thread)  \r\n- Многопоточность, lock-free структуры  \r\n- Linux/Windows kernel-level оптимизация  \r\n- Сетевое программирование (TCP/IP, FIX)  \r\n- gdb, Valgrind, Jenkins', 14, 5, 6, 10, '2025-06-19 17:01:26', 1),
+(22, 'Fullstack JS Developer', 'Профессиональный профиль: \r\nFullstack JS Developer с 4-летним опытом. Специализация – создание интерактивных веб-приложений (e-commerce, edtech). Предпочитаю современный стек: React + TypeScript, Node.js, serverless. Умею работать с дизайн-системами и оптимизировать UX.  \r\n\r\n**Ключевые навыки:**  \r\n- React, Next.js, Redux, Zustand  \r\n- Node.js, Express, NestJS  \r\n- TypeScript, JavaScript (ES6+)  \r\n- MongoDB, PostgreSQL, Firebase  \r\n- Jest, Cypress, GitLab CI', 7, 5, 5, 3, '2025-06-19 17:03:00', 1),
+(23, 'PHP Developer с экспертизой в Laravel и Symfony', 'Профессиональный профиль:  \r\nPHP Developer с экспертизой в Laravel и Symfony. Автоматизировал бизнес-процессы для 20+ клиентов в e-commerce и логистике. Активно применяю DDD, пишу тестируемый код. Имею опыт миграции монолитов на микросервисы.  \r\n\r\nКлючевые навыки:\r\n- PHP 8+, Laravel, Symfony  \r\n- MySQL, PostgreSQL, Redis  \r\n- Docker, Kubernetes, AWS Lightsail  \r\n- REST API, JWT, OAuth2  \r\n- PHPUnit, TDD, Swagger', 30, 5, 6, 2, '2025-06-19 17:03:59', 1),
+(24, 'Python Developer с фокусом на Data-инфраструктуру', 'Профессиональный профиль:  \r\nPython Developer с фокусом на Data-инфраструктуру. Участвовал в построении платформ для обработки больших данных (до 1 TB/день). Интегрировал ML-модели в production. Пишу чистый, документированный код с акцентом на scalability.  \r\n\r\nКлючевые навыки:\r\n- Python (Pandas, NumPy, SciPy)  \r\n- FastAPI, Django, Flask  \r\n- PostgreSQL, BigQuery, Elasticsearch  \r\n- Apache Airflow, Luigi, DVC  \r\n- Docker, Kubernetes, GCP/AWS', 14, 3, 4, 2, '2025-06-19 17:05:03', 1),
+(25, 'Разработчик на Javascript - React, Node.JS', 'Более 3 лет опыта работы с js и библиотеками', 14, 3, 4, 2, '2025-06-19 17:08:02', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `resume_responses`
+--
+
+CREATE TABLE `resume_responses` (
+  `id` int NOT NULL,
+  `resume_id` int NOT NULL,
+  `hr_id` int NOT NULL,
+  `status` enum('pending','accepted','rejected') DEFAULT 'pending',
+  `message` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `resume_skills`
+--
+
+CREATE TABLE `resume_skills` (
+  `resume_id` int NOT NULL,
+  `skill_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Дамп данных таблицы `resume_skills`
+--
+
+INSERT INTO `resume_skills` (`resume_id`, `skill_id`) VALUES
+(20, 1),
+(24, 2),
+(23, 3),
+(22, 4),
+(25, 4),
+(21, 5);
 
 -- --------------------------------------------------------
 
@@ -599,11 +743,18 @@ CREATE TABLE `skills` (
 --
 
 INSERT INTO `skills` (`id`, `name`) VALUES
+(11, 'Адаптивность'),
+(8, 'Аналитические навыки'),
 (5, 'Знание языка программирования C++'),
 (1, 'Знание языка программирования Java'),
 (4, 'Знание языка программирования JavaScript'),
 (3, 'Знание языка программирования PHP'),
-(2, 'Знание языка программирования Python');
+(2, 'Знание языка программирования Python'),
+(9, 'Коммуникативные навыки'),
+(7, 'Креативность'),
+(12, 'Критическое мышление'),
+(10, 'Опыт работы с базами данных SQL '),
+(6, 'Тимбилдинг и работа в команде');
 
 -- --------------------------------------------------------
 
@@ -648,9 +799,29 @@ CREATE TABLE `users` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `avatar` varchar(255) DEFAULT 'default_avatar.png',
   `is_blocked` tinyint(1) DEFAULT '0',
-  `blocked_until` timestamp NULL DEFAULT NULL
+  `blocked_until` timestamp NULL DEFAULT NULL,
+  `age` int DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `city` varchar(100) DEFAULT NULL,
+  `profile_completion` int DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Дамп данных таблицы `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `email`, `login`, `password`, `role`, `created_at`, `avatar`, `is_blocked`, `blocked_until`, `age`, `phone`, `city`, `profile_completion`) VALUES
+(1, 'Ульянов Кирилл Сергеевич', 'dokl200100300400@gmail.com', 'Zokti', '$2y$10$9uFBgzFitZKQy4m4NWvpNu4XcP2m5Gsx855eWxAbvL/I4DL.MtF5u', 'HR', '2025-03-15 01:35:56', '1_mUSaJisDp5g.jpg', 0, NULL, 20, '+79204990656', 'Таганрог', 100),
+(2, 'Черман Алексей Николаевич', 'doctor3play@gmail.com', 'shick', '$2y$10$sU.jqsCdEWxHAle./tHtPOQ/JhS5NCoKupLjZWp5DlJWbJomRBEke', 'candidate', '2025-03-15 01:36:50', '2_5226613816845003836_99.jpg', 0, NULL, 19, '+79999999999', 'Донецк', 100),
+(3, 'Сотников Даниил', 'sotka@gmail.com', 'sotka', '$2y$10$5.kmbdhwrPj1XDZ/JwUKTuHo.XtMUNtInKpnBrr.6lxTKJPt4IEl.', 'candidate', '2025-03-16 11:07:38', '3_1750352536_3660360542460160061_1.jpg', 0, NULL, 21, '+79553535555', 'Таганрог', 100),
+(4, 'Ульянова Екатерина Николаевна', 'katrin@gmail.com', 'katrin', '$2y$10$nVNBZVInP1k8.L5dkLJ9Q.SsZwm3EAbGu.2EKMbW9v7LQNICglN4u', 'admin', '2025-03-17 00:29:55', '4_1750375306_1.jpg', 0, NULL, NULL, NULL, NULL, 63),
+(5, 'moderator', 'moder@gmail.com', 'moderator', '$2y$10$lK7.PKMlHn7fTSwfr0S1K.dAEsfLSDOtR4Y0/a060bCkq.4BhQ5zW', 'moderator', '2025-03-18 19:09:48', '5_1750196188_Vergil Icon DMC.jpg', 0, NULL, NULL, NULL, NULL, 63),
+(7, 'tun tun tun tun Sahur', 'sahur@gmail.com', 'sahur', '$2y$10$fo61LCUhE0zLgb7iYQLWQuaeDS.Js/qu3MrA4jJ14PIqQ78CQ.ruW', 'candidate', '2025-05-21 19:54:41', '7_1747857346_{B9F1440F-2EB2-41FF-B470-8CFEE755912E}.png', 0, NULL, NULL, NULL, NULL, 63),
+(8, '123', 'csttsets@mail.ru', '123', '$2y$10$2njkfZXaR6kzvJX0LjjdcOLI3MBdGgzioAQ56OqTG/5pwuWGSiwQe', 'candidate', '2025-06-07 06:31:30', '8_1749277978_Лехохол (10).jpg', 0, NULL, NULL, NULL, NULL, 63),
+(9, 'Спардович Диниила', 'sparda@gmail.com', 'dante', '$2y$10$Ikn72SRKcejdylAWwe9PPeP0nm90CgCIBfNZh5Jrfw11CTJxrnqQa', 'candidate', '2025-06-19 16:54:48', '9_1750352116_Без названия.jpg', 0, NULL, 38, '+79999999999', 'Ред грейв', 100),
+(10, 'Спардович Виталий', 'spardason@gmail.com', 'vergil', '$2y$10$1wRPjnSsIvFrVJXtS.stJOWrKOz6uvpvXJpXJW2ps2.BVn.v5URUi', 'candidate', '2025-06-19 16:59:20', '10_1750352374_Vergil Icon DMC.jpg', 0, NULL, 40, '+79998885555', 'Ред грейв', 100);
+
+--
 -- Индексы сохранённых таблиц
 --
 
@@ -667,7 +838,8 @@ ALTER TABLE `answers`
 ALTER TABLE `applications`
   ADD PRIMARY KEY (`id`),
   ADD KEY `job_id` (`job_id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `hr_id` (`hr_id`),
+  ADD KEY `candidate_id` (`candidate_id`);
 
 --
 -- Индексы таблицы `experiences`
@@ -681,9 +853,17 @@ ALTER TABLE `experiences`
 --
 ALTER TABLE `jobs`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
+  ADD KEY `user_id` (`hr_id`),
   ADD KEY `experience_id` (`experience_id`),
   ADD KEY `salary_id` (`salary_id`);
+
+--
+-- Индексы таблицы `job_skills`
+--
+ALTER TABLE `job_skills`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_job_skill` (`job_id`,`skill_id`),
+  ADD KEY `skill_id` (`skill_id`);
 
 --
 -- Индексы таблицы `messages`
@@ -692,6 +872,12 @@ ALTER TABLE `messages`
   ADD PRIMARY KEY (`id`),
   ADD KEY `application_id` (`application_id`),
   ADD KEY `user_id` (`user_id`);
+
+--
+-- Индексы таблицы `profile_fields`
+--
+ALTER TABLE `profile_fields`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Индексы таблицы `questions`
@@ -707,6 +893,30 @@ ALTER TABLE `results`
   ADD PRIMARY KEY (`id`),
   ADD KEY `test_id` (`test_id`),
   ADD KEY `user_id` (`user_id`);
+
+--
+-- Индексы таблицы `resumes`
+--
+ALTER TABLE `resumes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `salary_id` (`salary_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `fk_resumes_experience` (`experience_id`);
+
+--
+-- Индексы таблицы `resume_responses`
+--
+ALTER TABLE `resume_responses`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `resume_id` (`resume_id`),
+  ADD KEY `hr_id` (`hr_id`);
+
+--
+-- Индексы таблицы `resume_skills`
+--
+ALTER TABLE `resume_skills`
+  ADD PRIMARY KEY (`resume_id`,`skill_id`),
+  ADD KEY `skill_id` (`skill_id`);
 
 --
 -- Индексы таблицы `reviews`
@@ -742,7 +952,11 @@ ALTER TABLE `tests`
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `login` (`login`);
+  ADD UNIQUE KEY `login` (`login`),
+  ADD UNIQUE KEY `login_2` (`login`),
+  ADD UNIQUE KEY `email_2` (`email`),
+  ADD UNIQUE KEY `login_3` (`login`),
+  ADD UNIQUE KEY `email_3` (`email`);
 
 --
 -- AUTO_INCREMENT для сохранённых таблиц
@@ -758,7 +972,7 @@ ALTER TABLE `answers`
 -- AUTO_INCREMENT для таблицы `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT для таблицы `experiences`
@@ -770,12 +984,24 @@ ALTER TABLE `experiences`
 -- AUTO_INCREMENT для таблицы `jobs`
 --
 ALTER TABLE `jobs`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT для таблицы `job_skills`
+--
+ALTER TABLE `job_skills`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT для таблицы `messages`
 --
 ALTER TABLE `messages`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+
+--
+-- AUTO_INCREMENT для таблицы `profile_fields`
+--
+ALTER TABLE `profile_fields`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
@@ -788,7 +1014,19 @@ ALTER TABLE `questions`
 -- AUTO_INCREMENT для таблицы `results`
 --
 ALTER TABLE `results`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT для таблицы `resumes`
+--
+ALTER TABLE `resumes`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+
+--
+-- AUTO_INCREMENT для таблицы `resume_responses`
+--
+ALTER TABLE `resume_responses`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT для таблицы `reviews`
@@ -806,7 +1044,7 @@ ALTER TABLE `salaries`
 -- AUTO_INCREMENT для таблицы `skills`
 --
 ALTER TABLE `skills`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT для таблицы `tests`
@@ -818,7 +1056,7 @@ ALTER TABLE `tests`
 -- AUTO_INCREMENT для таблицы `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц
@@ -835,21 +1073,28 @@ ALTER TABLE `answers`
 --
 ALTER TABLE `applications`
   ADD CONSTRAINT `applications_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `applications_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `applications_ibfk_2` FOREIGN KEY (`hr_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `applications_ibfk_3` FOREIGN KEY (`candidate_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Ограничения внешнего ключа таблицы `jobs`
 --
 ALTER TABLE `jobs`
-  ADD CONSTRAINT `jobs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `jobs_ibfk_1` FOREIGN KEY (`hr_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `jobs_ibfk_2` FOREIGN KEY (`experience_id`) REFERENCES `experiences` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `jobs_ibfk_3` FOREIGN KEY (`salary_id`) REFERENCES `salaries` (`id`) ON DELETE CASCADE;
+
+--
+-- Ограничения внешнего ключа таблицы `job_skills`
+--
+ALTER TABLE `job_skills`
+  ADD CONSTRAINT `job_skills_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `job_skills_ibfk_2` FOREIGN KEY (`skill_id`) REFERENCES `skills` (`id`) ON DELETE CASCADE;
 
 --
 -- Ограничения внешнего ключа таблицы `messages`
 --
 ALTER TABLE `messages`
-  ADD CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
@@ -864,6 +1109,28 @@ ALTER TABLE `questions`
 ALTER TABLE `results`
   ADD CONSTRAINT `results_ibfk_1` FOREIGN KEY (`test_id`) REFERENCES `tests` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `results_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ограничения внешнего ключа таблицы `resumes`
+--
+ALTER TABLE `resumes`
+  ADD CONSTRAINT `fk_resumes_experience` FOREIGN KEY (`experience_id`) REFERENCES `experiences` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `resumes_ibfk_1` FOREIGN KEY (`salary_id`) REFERENCES `salaries` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `resumes_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ограничения внешнего ключа таблицы `resume_responses`
+--
+ALTER TABLE `resume_responses`
+  ADD CONSTRAINT `resume_responses_ibfk_1` FOREIGN KEY (`resume_id`) REFERENCES `resumes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `resume_responses_ibfk_2` FOREIGN KEY (`hr_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ограничения внешнего ключа таблицы `resume_skills`
+--
+ALTER TABLE `resume_skills`
+  ADD CONSTRAINT `resume_skills_ibfk_1` FOREIGN KEY (`resume_id`) REFERENCES `resumes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `resume_skills_ibfk_2` FOREIGN KEY (`skill_id`) REFERENCES `skills` (`id`) ON DELETE CASCADE;
 
 --
 -- Ограничения внешнего ключа таблицы `reviews`

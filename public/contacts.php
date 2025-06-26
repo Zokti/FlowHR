@@ -187,7 +187,7 @@ require '../includes/header.php';
                 <i class="fas fa-map-marker-alt"></i>
                 <h3>Адрес</h3>
                 <p>Мы находимся по адресу: г. Таганрог, ул. Чехова, 320А.</p>
-                <a href="#map">Посмотреть на карте</a>
+                <a href="https://yandex.ru/maps/-/CHR~NA7J" target="_blank">Посмотреть на карте</a>
             </div>
         </div>
 

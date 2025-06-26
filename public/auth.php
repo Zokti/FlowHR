@@ -2,9 +2,14 @@
 session_start();
 require '../includes/config.php';
 
+// Инициализация сессионных данных
+$_SESSION['form_data'] = $_SESSION['form_data'] ?? [];
+$_SESSION['error'] = $_SESSION['error'] ?? null;
+$_SESSION['success'] = $_SESSION['success'] ?? null;
+
 // Обработка входа
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    $login = $_POST['login'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_login'])) {
+    $login = trim($_POST['login']);
     $password = $_POST['password'];
 
     $stmt = $pdo->prepare("SELECT * FROM users WHERE login = ?");
@@ -15,26 +20,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['role'] = $user['role'];
-        
         header("Location: profile.php");
         exit();
     } else {
-        $error_message = "Ошибка: Неверные данные";
+        $_SESSION['error'] = "Ошибка: Неверный логин или пароль";
+        header("Location: auth.php");
+        exit();
     }
 }
 
 // Обработка регистрации
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $login = $_POST['login'];
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $name = trim($_POST['name']);
+    $email = strtolower(trim($_POST['email']));
+    $login = trim($_POST['login']);
+    $password = $_POST['password'];
     $role = $_POST['role'];
 
-    $stmt = $pdo->prepare("INSERT INTO users (name, email, login, password, role) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$name, $email, $login, $password, $role]);
+    // Сохранение данных формы
+    $_SESSION['form_data'] = [
+        'name' => $name,
+        'email' => $email,
+        'login' => $login,
+        'role' => $role
+    ];
 
-    $success_message = "Регистрация успешна. <a href='login.php'>Войти</a>";
+    // Валидация данных
+    $errors = [];
+    if (empty($name)) $errors[] = 'Имя обязательно';
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Некорректный email';
+    if (strlen($password) < 8) $errors[] = 'Пароль должен быть не менее 8 символов';
+    if (strlen($login) < 3) $errors[] = 'Логин должен быть не менее 3 символов';
+
+    if (!empty($errors)) {
+        $_SESSION['error'] = "Ошибка: " . implode(', ', $errors);
+        header("Location: auth.php?form=register");
+        exit();
+    }
+
+    // Проверка уникальности логина и email
+    try {
+        // Проверка логина
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE login = ?");
+        $stmt->execute([$login]);
+        if ($stmt->rowCount() > 0) {
+            $_SESSION['error'] = "Ошибка: Пользователь с таким логином уже существует";
+            header("Location: auth.php?form=register");
+            exit();
+        }
+
+        // Проверка email
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        if ($stmt->rowCount() > 0) {
+            $_SESSION['error'] = "Ошибка: Пользователь с таким email уже существует";
+            header("Location: auth.php?form=register");
+            exit();
+        }
+
+        // Регистрация
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("INSERT INTO users (name, email, login, password, role) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$name, $email, $login, $hashed_password, $role]);
+        
+        unset($_SESSION['form_data']);
+        $_SESSION['success'] = "Регистрация успешна! Вы можете войти.";
+        header("Location: auth.php");
+        exit();
+    } catch (PDOException $e) {
+        $_SESSION['error'] = "Ошибка регистрации: " . $e->getMessage();
+        header("Location: auth.php?form=register");
+        exit();
+    }
+}
+
+// Очистка сообщений при обновлении
+if (empty($_POST)) {
+    unset($_SESSION['error']);
+    unset($_SESSION['success']);
 }
 ?>
 
@@ -43,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход и регистрация</title>
+    <title>Авторизация и Регистрация | FlowHR</title>
     <!-- Подключаем Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -274,33 +337,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
         }
     </style>
 </head>
-<?php include '../includes/header.php'; ?>
 <body>
-    <div class="auth-wrapper">
-        <!-- Изображение слева -->
-        <div class="auth-image"></div>
+    <?php include '../includes/header.php'; ?>
 
-        <!-- Контейнер для формы -->
+    <div class="auth-wrapper">
+        <div class="auth-image"></div>
+        
         <div class="auth-container">
             <div class="auth-form">
-                <!-- Кнопки переключения -->
                 <div class="toggle-buttons">
-                    <button id="loginBtn" class="active">Войти</button>
-                    <button id="registerBtn">Зарегистрироваться</button>
+                    <button id="loginBtn" class="<?= empty($_GET['form']) ? 'active' : '' ?>">Войти</button>
+                    <button id="registerBtn" class="<?= isset($_GET['form']) ? 'active' : '' ?>">Регистрироваться</button>
                 </div>
 
                 <!-- Форма входа -->
-                <form id="loginForm" method="post" class="form active">
-                    <h2>Вход</h2>
-
-                    <!-- Сообщение об ошибке -->
-                    <?php if (isset($error_message)): ?>
-                        <div class="error-message"><?= htmlspecialchars($error_message) ?></div>
+                <form id="loginForm" method="post" class="form <?= empty($_GET['form']) ? 'active' : '' ?>">
+                    <h2>Вход в систему</h2>
+                    <?php if ($_SESSION['error'] && !isset($_GET['form'])): ?>
+                        <div class="error-message"><?= htmlspecialchars($_SESSION['error']) ?></div>
+                    <?php endif; ?>
+                    <?php if ($_SESSION['success']): ?>
+                        <div class="success-message"><?= htmlspecialchars($_SESSION['success']) ?></div>
                     <?php endif; ?>
 
                     <div class="input-group">
                         <i class="fas fa-user"></i>
-                        <input type="text" name="login" placeholder="Логин" required>
+                        <input type="text" name="login" placeholder="Ваш логин" required>
                     </div>
                     <div class="input-group">
                         <i class="fas fa-lock"></i>
@@ -310,62 +372,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                 </form>
 
                 <!-- Форма регистрации -->
-                <form id="registerForm" method="post" class="form">
-                    <h2>Регистрация</h2>
+                <form id="registerForm" method="post" class="form <?= isset($_GET['form']) ? 'active' : '' ?>">
+    <h2>Регистрация аккаунта</h2>
+    
+    <!-- Вывод сообщения об ошибке для регистрации -->
+    <?php if ($_SESSION['error'] && isset($_GET['form'])): ?>
+        <div class="error-message"><?= htmlspecialchars($_SESSION['error']) ?></div>
+        <?php unset($_SESSION['error']); // Очистка ошибки после вывода ?>
+    <?php endif; ?>
 
-                    <!-- Сообщение об успехе -->
-                    <?php if (isset($success_message)): ?>
-                        <div class="success-message"><?= $success_message ?></div>
-                    <?php endif; ?>
+    <div class="input-group">
+        <i class="fas fa-user"></i>
+        <input type="text" name="name" placeholder="Полное имя" 
+               value="<?= htmlspecialchars($_SESSION['form_data']['name'] ?? '') ?>" required>
+    </div>
+    <div class="input-group">
+        <i class="fas fa-envelope"></i>
+        <input type="email" name="email" placeholder="Email"
+               value="<?= htmlspecialchars($_SESSION['form_data']['email'] ?? '') ?>" required>
+    </div>
+    <div class="input-group">
+        <i class="fas fa-user-tag"></i>
+        <input type="text" name="login" placeholder="Логин"
+               value="<?= htmlspecialchars($_SESSION['form_data']['login'] ?? '') ?>" required>
+    </div>
+    <div class="input-group">
+        <i class="fas fa-lock"></i>
+        <input type="password" name="password" placeholder="Пароль (минимум 8 символов)" required>
+    </div>
+    <div class="input-group">
+        <i class="fas fa-user-tie"></i>
+        <select name="role" required>
+            <option value="Candidate" <?= ($_SESSION['form_data']['role'] ?? '') === 'Candidate' ? 'selected' : '' ?>>Ищу работу</option>
+            <option value="HR" <?= ($_SESSION['form_data']['role'] ?? '') === 'HR' ? 'selected' : '' ?>>Ищу сотрудников</option>
+        </select>
+    </div>
+    <button type="submit" name="register">Создать аккаунт</button>
+</form>
 
-                    <div class="input-group">
-                        <i class="fas fa-user"></i>
-                        <input type="text" name="name" placeholder="Имя" required>
-                    </div>
-                    <div class="input-group">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" placeholder="Email" required>
-                    </div>
-                    <div class="input-group">
-                        <i class="fas fa-user-tag"></i>
-                        <input type="text" name="login" placeholder="Логин" required>
-                    </div>
-                    <div class="input-group">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" name="password" placeholder="Пароль" required>
-                    </div>
-                    <div class="input-group">
-                        <i class="fas fa-user-tie"></i>
-                        <select name="role" required>
-                            <option value="Candidate">Найти работу/вакансии</option>
-                            <option value="HR">Найти кандидатов/сотрудников</option>
-                        </select>
-                    </div>
-                    <button type="submit" name="register">Зарегистрироваться</button>
-                </form>
             </div>
         </div>
     </div>
 
     <script>
-        // Переключение между формами
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            const forms = document.querySelectorAll('.form');
 
-        loginBtn.addEventListener('click', () => {
-            loginForm.classList.add('active');
-            registerForm.classList.remove('active');
-            loginBtn.classList.add('active');
-            registerBtn.classList.remove('active');
-        });
+            // Автоматическое переключение форм
+            if (window.location.search.includes('form=register')) {
+                registerBtn.click();
+            }
 
-        registerBtn.addEventListener('click', () => {
-            registerForm.classList.add('active');
-            loginForm.classList.remove('active');
-            registerBtn.classList.add('active');
-            loginBtn.classList.remove('active');
+            // Обработчики переключения
+            [loginBtn, registerBtn].forEach(btn => {
+                btn.addEventListener('click', () => {
+                    forms.forEach(form => form.classList.remove('active'));
+                    document.getElementById(`${btn.id.replace('Btn', 'Form')}`).classList.add('active');
+                    
+                    btn.classList.add('active');
+                    (btn === loginBtn ? registerBtn : loginBtn).classList.remove('active');
+                });
+            });
         });
     </script>
 </body>

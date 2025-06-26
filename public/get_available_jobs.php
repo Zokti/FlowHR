@@ -11,7 +11,7 @@ $hr_id = $_SESSION['user_id'];
 $candidate_id = $_GET['candidate_id'];
 
 // Получаем все вакансии HR
-$query_jobs = "SELECT id, title FROM jobs WHERE user_id = :hr_id";
+$query_jobs = "SELECT id, title FROM jobs WHERE hr_id = :hr_id";
 $stmt_jobs = $pdo->prepare($query_jobs);
 $stmt_jobs->execute(['hr_id' => $hr_id]);
 $jobs = $stmt_jobs->fetchAll(PDO::FETCH_ASSOC);
@@ -20,7 +20,7 @@ $jobs = $stmt_jobs->fetchAll(PDO::FETCH_ASSOC);
 $query_applied_jobs = "
     SELECT job_id FROM applications
     WHERE user_id = :candidate_id AND job_id IN (
-        SELECT id FROM jobs WHERE user_id = :hr_id
+        SELECT id FROM jobs WHERE hr_id = :hr_id
     )
 ";
 $stmt_applied = $pdo->prepare($query_applied_jobs);

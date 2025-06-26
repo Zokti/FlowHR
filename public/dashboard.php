@@ -43,7 +43,7 @@ $hr_accepted = 0;
 $hr_rejected = 0;
 if ($user_role == 'HR') {
     // Количество вакансий HR
-    $stmt = $pdo->prepare("SELECT COUNT(*) as total_jobs FROM jobs WHERE user_id = ?");
+    $stmt = $pdo->prepare("SELECT COUNT(*) as total_jobs FROM jobs WHERE hr_id = ?");
     $stmt->execute([$user_id]);
     $total_jobs = $stmt->fetch()['total_jobs'];
 
@@ -52,7 +52,7 @@ if ($user_role == 'HR') {
         SELECT COUNT(*) as hr_applications 
         FROM applications 
         JOIN jobs ON applications.job_id = jobs.id 
-        WHERE jobs.user_id = ?
+        WHERE jobs.hr_id = ?
     ");
     $stmt->execute([$user_id]);
     $hr_applications = $stmt->fetch()['hr_applications'];
@@ -62,7 +62,7 @@ if ($user_role == 'HR') {
         SELECT COUNT(*) as hr_pending 
         FROM applications 
         JOIN jobs ON applications.job_id = jobs.id 
-        WHERE jobs.user_id = ? AND applications.status = 'pending'
+        WHERE jobs.hr_id = ? AND applications.status = 'pending'
     ");
     $stmt_pending->execute([$user_id]);
     $hr_pending = $stmt_pending->fetch()['hr_pending'];
@@ -71,7 +71,7 @@ if ($user_role == 'HR') {
         SELECT COUNT(*) as hr_accepted 
         FROM applications 
         JOIN jobs ON applications.job_id = jobs.id 
-        WHERE jobs.user_id = ? AND applications.status = 'accepted'
+        WHERE jobs.hr_id = ? AND applications.status = 'accepted'
     ");
     $stmt_accepted->execute([$user_id]);
     $hr_accepted = $stmt_accepted->fetch()['hr_accepted'];
@@ -80,7 +80,7 @@ if ($user_role == 'HR') {
         SELECT COUNT(*) as hr_rejected 
         FROM applications 
         JOIN jobs ON applications.job_id = jobs.id 
-        WHERE jobs.user_id = ? AND applications.status = 'rejected'
+        WHERE jobs.hr_id = ? AND applications.status = 'rejected'
     ");
     $stmt_rejected->execute([$user_id]);
     $hr_rejected = $stmt_rejected->fetch()['hr_rejected'];
