@@ -1,5 +1,4 @@
 <h1 align="center">
-  <img src="https://via.placeholder.com/150x50/007bff/ffffff?text=FlowHR" alt="FlowHR Logo">
   <br>🚀 FlowHR - HR-автоматизация нового поколения
 </h1>
 
