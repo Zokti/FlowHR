@@ -10,7 +10,6 @@
   <!-- Бейджи технологий -->
   <img src="https://img.shields.io/badge/PHP-7.2%2B-777BB4?logo=php&logoColor=white" alt="PHP Version">
   <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white" alt="MySQL">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/status-active-brightgreen" alt="Status">
 </p>
 
